@@ -1,0 +1,10 @@
+# OS / editor junk
+*.lnk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# full-size source videos (site uses the compressed ba-video-*.mp4 copies)
+before-after-video-01.mp4
+before-after-video-02.mp4
