@@ -129,11 +129,6 @@ header.scrolled{box-shadow:var(--shadow-sm)}
 .case:hover .case-frame{transform:rotate(0)}
 .case-frame video{width:100%;height:100%;object-fit:cover;display:block;background:var(--navy-deep)}
 .case-badge{position:absolute;top:14px;left:14px;z-index:2;display:inline-flex;align-items:center;gap:6px;background:rgba(21,43,63,.88);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 11px;border-radius:999px;backdrop-filter:blur(4px)}
-.case-frame{cursor:pointer}
-.play-tap{position:absolute;inset:0;z-index:3;display:none;align-items:center;justify-content:center;background:rgba(21,43,63,.28);pointer-events:none}
-.case-frame.blocked .play-tap{display:flex}
-.play-tap span{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.93);box-shadow:0 8px 26px rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center}
-.play-tap svg{width:28px;height:28px;margin-left:5px}
 .case-body h3{font-size:clamp(1.45rem,2.6vw,2rem);margin-bottom:14px;letter-spacing:-.02em;line-height:1.14}
 .case-body p{color:var(--slate);font-size:1.02rem;margin:0 0 18px;max-width:50ch}
 .case-loc{display:inline-flex;align-items:center;gap:8px;color:var(--copper);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.9rem}
@@ -423,8 +418,7 @@ footer h4{color:#fff;font-size:.95rem;margin-bottom:16px}
         <div class="case-media">
           <div class="case-frame">
             <span class="case-badge">Before &rarr; After</span>
-            <video data-autoplay src="ba-video-01.mp4" poster="poster-01.jpg" muted loop playsinline preload="metadata" aria-label="Before and after: old hot water cylinder replaced with a modern combi boiler"></video>
-            <span class="play-tap"><span><svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="#1E3A52" stroke="none"/></svg></span></span>
+            <video data-autoplay autoplay src="ba-video-01.mp4" poster="poster-01.jpg" muted loop playsinline preload="auto" aria-label="Before and after: old hot water cylinder replaced with a modern combi boiler"></video>
           </div>
         </div>
         <div class="case-body">
@@ -440,8 +434,7 @@ footer h4{color:#fff;font-size:.95rem;margin-bottom:16px}
         <div class="case-media">
           <div class="case-frame">
             <span class="case-badge">Before &rarr; After</span>
-            <video data-autoplay src="ba-video-02.mp4" poster="poster-02.jpg" muted loop playsinline preload="metadata" aria-label="Before and after: dated shower enclosure replaced with a modern walk-in shower"></video>
-            <span class="play-tap"><span><svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="#1E3A52" stroke="none"/></svg></span></span>
+            <video data-autoplay autoplay src="ba-video-02.mp4" poster="poster-02.jpg" muted loop playsinline preload="auto" aria-label="Before and after: dated shower enclosure replaced with a modern walk-in shower"></video>
           </div>
         </div>
         <div class="case-body">
@@ -721,21 +714,13 @@ function nextSlide(){goSlide((heroIdx+1)%slides.length);}
 function resetHero(){clearInterval(heroTimer);heroTimer=setInterval(nextSlide,6000);}
 resetHero();
 
-/* ===== BEFORE/AFTER VIDEOS: autoplay on-screen, tap-to-play fallback when autoplay is blocked ===== */
+/* ===== BEFORE/AFTER VIDEOS: autoplay on-screen; tapping a card silently restarts a stalled video ===== */
 (()=>{
   const vids=document.querySelectorAll('video[data-autoplay]');
-  const tryPlay=v=>{
-    v.muted=true;
-    const p=v.play();
-    if(p)p.catch(()=>{const f=v.closest('.case-frame');if(f)f.classList.add('blocked');});
-  };
+  const tryPlay=v=>{v.muted=true;const p=v.play();if(p)p.catch(()=>{});};
   vids.forEach(v=>{
     const f=v.closest('.case-frame');
-    v.addEventListener('playing',()=>{if(f)f.classList.remove('blocked');});
-    if(f)f.addEventListener('click',()=>{
-      if(v.paused){v.muted=true;v.play().catch(()=>{});}
-      else v.pause();
-    });
+    if(f)f.addEventListener('click',()=>{if(v.paused)tryPlay(v);});
   });
   if(!('IntersectionObserver' in window)){vids.forEach(tryPlay);return;}
   const io=new IntersectionObserver(entries=>{
